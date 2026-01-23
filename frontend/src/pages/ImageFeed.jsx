@@ -12,6 +12,15 @@ function ImageFeed() {
     loadFeed();
   }, []);
 
+  function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
   async function loadFeed() {
     try {
       const auth = await instance.get("/check/login?referer=user", {
@@ -22,12 +31,14 @@ function ImageFeed() {
         setUserId(String(auth.data.userId));
       }
 
-      const res = await instance.get("/image/feed?sort=newest");
+      const res = await instance.get("/image/feed");
 
-      const safeImages = res.data.map((img) => ({
-        ...img,
-        likes: Array.isArray(img.likes) ? img.likes.map(String) : [],
-      }));
+      const safeImages = shuffleArray(
+        res.data.map((img) => ({
+          ...img,
+          likes: Array.isArray(img.likes) ? img.likes.map(String) : [],
+        }))
+      );
 
       setImages(safeImages);
     } catch {
@@ -62,6 +73,20 @@ function ImageFeed() {
     }
   }
 
+  /* ================= DOUBLE TAP HANDLER ================= */
+  function handleDoubleTap(img) {
+    if (!userId) {
+      toast.info("Please login to like ❤️");
+      return;
+    }
+
+    const alreadyLiked = img.likes.includes(userId);
+
+    if (!alreadyLiked) {
+      toggleLike(img._id);
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center">
@@ -84,18 +109,20 @@ function ImageFeed() {
           return (
             <div
               key={img._id}
-              className="rounded-xl overflow-hidden shadow hover:shadow-lg transition bg-transparent"
+              className="rounded-xl overflow-hidden shadow hover:shadow-lg transition"
             >
-              {/* IMAGE */}
               <div className="relative">
+                {/* IMAGE WITH DOUBLE TAP */}
                 <img
                   src={img.imageUrl}
                   alt={img.title}
-                  className="w-full h-64 object-cover"
+                  className="w-full h-64 object-cover select-none"
+                  onDoubleClick={() => handleDoubleTap(img)}
                 />
 
-                {/* BOTTOM OVERLAY (no white bg) */}
-                <div className="absolute bottom-0 left-0 right-0
+                {/* OVERLAY */}
+                <div
+                  className="absolute bottom-0 left-0 right-0
                   bg-gradient-to-t from-black/60 to-transparent
                   px-4 py-3 text-white"
                 >

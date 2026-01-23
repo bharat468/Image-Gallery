@@ -20,6 +20,7 @@ import EditImage from "./admin/pages/EditImage";
 import AdminLayout from "./admin/components/AdminLayout";
 import ProtectedRouters from "./admin/components/ProtectedRouters";
 import AuthProvider from "./contexts/AuthProvider";
+import UserList from "./admin/pages/UserList";
 
 const router = createBrowserRouter([
   {
@@ -59,6 +60,8 @@ const router = createBrowserRouter([
       { path: "image/upload", element: <UploadImage /> },
       { path: "images", element: <ImageList /> },
       { path: "image/edit/:id", element: <EditImage /> },
+      { path: "users", element: <UserList /> },
+
     ],
   },
   { path: "*", element: <NotFound /> }

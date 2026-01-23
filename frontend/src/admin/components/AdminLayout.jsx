@@ -41,7 +41,7 @@ function AdminLayout() {
     { to: "/admin/home", label: "Dashboard", icon: <FaHome /> },
     { to: "/admin/image/upload", label: "Upload Image", icon: <FaImage /> },
     { to: "/admin/images", label: "Image List", icon: <FaImages /> },
-    // { to: "/admin/users", label: "Users", icon: <FaUsers /> },
+    { to: "/admin/users", label: "Users", icon: <FaUsers /> },
   ];
 
   return (
