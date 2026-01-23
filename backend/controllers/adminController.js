@@ -27,8 +27,8 @@ export async function loginAdmin(req, res) {
 
         res.cookie("admin_token", admin_token, {
             httpOnly: true,
-            secure: true,
-            sameSite: process.env.sameSite ? process.env.sameSite : "lax",
+            secure: process.env.secure,
+            sameSite: process.env.samesite,
             maxAge: 3600000
         });
 
@@ -43,8 +43,8 @@ export async function logoutAdmin(req, res) {
     try {
         res.clearCookie("admin_token", {
             httpOnly: true,
-            secure: true,
-            sameSite: process.env.sameSite ? process.env.sameSite : "lax",
+            secure: process.env.secure,
+            sameSite: process.env.samesite,
             maxAge: -1
         });
 

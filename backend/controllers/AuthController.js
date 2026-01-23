@@ -1,6 +1,7 @@
 import Auth from "../models/Authmodel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import "dotenv/config"
 
 /* ================= REGISTER USER ================= */
 export async function registerUser(req, res) {
@@ -60,7 +61,8 @@ export async function loginUser(req, res) {
 
     res.cookie("auth_token", token, {
       httpOnly: true,
-      sameSite: "lax",
+      secure: process.env.secure,
+      sameSite: process.env.samesite,
       maxAge: 3600000,
     });
 
@@ -78,7 +80,8 @@ export async function logoutUser(req, res) {
   try {
     res.clearCookie("auth_token", {
       httpOnly: true,
-      sameSite: "lax",
+      secure: process.env.secure,
+      sameSite: process.env.samesite,
     });
 
     res.status(200).json({ message: "Logout successful" });
