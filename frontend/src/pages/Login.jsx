@@ -33,7 +33,7 @@ function Login() {
 
       setIsLoggedIn(true);
 
-      toast.success("Login successful 🎉"); // ✅ SUCCESS TOAST
+      toast.success("Login successful  🎉"); // ✅ SUCCESS TOAST
       navigate("/");
     } catch (error) {
       toast.error(error.response?.data?.message || "Invalid credentials ❌");
