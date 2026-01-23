@@ -1,6 +1,7 @@
 import Image from "../models/imageModel.js";
 import cloudinary from "../middlewares/cloudinary.js";
 
+/* ================= UPLOAD IMAGE ================= */
 export async function uploadImage(req, res) {
   try {
     const { title } = req.body;
@@ -9,18 +10,18 @@ export async function uploadImage(req, res) {
       return res.status(400).json({ message: "Title is required" });
     }
 
-    let imageUrl = "";
-
-    if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "gallery",
-      });
-      imageUrl = result.secure_url;
+    if (!req.file) {
+      return res.status(400).json({ message: "Image is required" });
     }
+
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "gallery",
+    });
 
     const image = await Image.create({
       title,
-      imageUrl,
+      imageUrl: result.secure_url,
+      publicId: result.public_id, // 🔥 ADDED
       uploadedBy: "admin",
       likes: [],
     });
@@ -31,10 +32,10 @@ export async function uploadImage(req, res) {
   }
 }
 
+/* ================= GET IMAGES ================= */
 export async function getImages(req, res) {
   try {
     const { sort } = req.query;
-
     let images = await Image.find();
 
     if (sort === "newest") {
@@ -55,6 +56,7 @@ export async function getImages(req, res) {
   }
 }
 
+/* ================= LIKE / UNLIKE ================= */
 export async function likeUnlikeImage(req, res) {
   try {
     const { id } = req.params;
@@ -65,19 +67,12 @@ export async function likeUnlikeImage(req, res) {
       return res.status(404).json({ message: "Image not found" });
     }
 
-    const likes = image.likes.map(uid => uid.toString());
-
+    const likes = image.likes.map((uid) => uid.toString());
     const index = likes.indexOf(userId);
 
-    if (index > -1) {
-      // 💔 UNLIKE
-      likes.splice(index, 1);
-    } else {
-      // ❤️ LIKE
-      likes.push(userId);
-    }
+    if (index > -1) likes.splice(index, 1);
+    else likes.push(userId);
 
-    // 🔥 Save as ObjectId again
     image.likes = likes;
     await image.save();
 
@@ -85,25 +80,27 @@ export async function likeUnlikeImage(req, res) {
       _id: image._id,
       title: image.title,
       imageUrl: image.imageUrl,
-      likes, // 🔥 STRING ARRAY RETURN
+      likes,
     });
-
   } catch (err) {
-    console.error("LIKE ERROR:", err);
     return res.status(500).json({ message: "Like failed" });
   }
 }
 
-
-
+/* ================= DELETE IMAGE ================= */
 export async function deleteImage(req, res) {
   try {
     const { id } = req.params;
 
-    const image = await Image.findByIdAndDelete(id);
+    const image = await Image.findById(id);
     if (!image) {
       return res.status(404).json({ message: "Image not found" });
     }
+
+    // 🔥 CLOUDINARY DELETE
+    await cloudinary.uploader.destroy(image.publicId);
+
+    await image.deleteOne();
 
     return res.status(200).json({ message: "Image deleted successfully" });
   } catch (error) {
@@ -141,10 +138,16 @@ export async function updateImage(req, res) {
     if (title) image.title = title;
 
     if (req.file) {
+      // 🔥 OLD IMAGE DELETE
+      await cloudinary.uploader.destroy(image.publicId);
+
+      // 🔥 NEW IMAGE UPLOAD
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: "gallery",
       });
+
       image.imageUrl = result.secure_url;
+      image.publicId = result.public_id;
     }
 
     await image.save();

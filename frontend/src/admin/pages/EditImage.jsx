@@ -79,8 +79,7 @@ function EditImage() {
 
       toast.success("Image updated successfully 🎉");
       navigate("/admin/images");
-    } catch (error) {
-      console.log(error);
+    } catch {
       toast.error("Failed to update image ❌");
     } finally {
       setBtnLoading(false);
@@ -90,28 +89,47 @@ function EditImage() {
   /* ================= LOADER ================= */
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center bg-slate-100">
-        <FaImage className="text-6xl text-slate-600 animate-pulse" />
-        <p className="mt-3 text-slate-500">Loading image...</p>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <FaImage className="text-5xl text-indigo-500 animate-pulse" />
+        <p className="mt-3 text-slate-500 text-sm">
+          Loading image...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6">
-
-      {/* BACK */}
+    /* 🌈 SAME GALLERY BACKGROUND FAMILY */
+    <div
+      className="min-h-screen p-4 sm:p-6"
+      style={{
+        background: `
+          radial-gradient(circle at 20% 20%, rgba(99,102,241,0.12), transparent 40%),
+          radial-gradient(circle at 80% 10%, rgba(236,72,153,0.12), transparent 40%),
+          linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f1f5f9 100%)
+        `,
+      }}
+    >
+      {/* BACK BUTTON */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-6"
+        className="mb-6 inline-flex items-center gap-2 text-slate-600
+        hover:text-slate-900 font-medium"
       >
         <FaArrowLeft />
-        <span className="text-sm">Back</span>
+        Back
       </button>
 
       {/* CARD */}
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold text-slate-800 mb-6">
+      <div
+        className="max-w-2xl mx-auto rounded-3xl shadow-md p-6 sm:p-8 border border-slate-200"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.97), rgba(255,255,255,0.92))",
+          backdropFilter: "blur(8px)",
+        }}
+      >
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-6">
           Edit Image
         </h2>
 
@@ -119,32 +137,33 @@ function EditImage() {
 
           {/* TITLE */}
           <div>
-            <label className="block text-sm font-semibold mb-1">
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
               Image Title
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border bg-slate-100"
+              className="w-full px-4 py-3 rounded-xl border border-slate-300
+              bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
           {/* OLD IMAGE */}
           <div>
-            <label className="block text-sm font-semibold mb-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Current Image
             </label>
             <img
               src={oldImage}
-              alt="Old"
-              className="w-full h-56 object-cover rounded-lg border"
+              alt="Current"
+              className="w-full h-56 object-cover rounded-xl border"
             />
           </div>
 
           {/* NEW IMAGE */}
           <div>
-            <label className="block text-sm font-semibold mb-1">
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
               Replace Image (optional)
             </label>
             <input
@@ -152,10 +171,10 @@ function EditImage() {
               ref={imageRef}
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full px-4 py-2 border rounded-lg bg-white"
+              className="w-full px-4 py-2 border rounded-xl bg-white"
             />
             <p className="text-xs text-slate-500 mt-1">
-              Agar image select nahi karoge to old image hi rahegi
+              Max size: 2MB. Leave empty to keep current image.
             </p>
           </div>
 
@@ -164,9 +183,9 @@ function EditImage() {
             type="submit"
             disabled={btnLoading}
             className={`w-full py-3 rounded-xl text-white text-lg font-semibold
-              bg-gradient-to-r from-slate-900 to-slate-700
+              bg-indigo-600 hover:bg-indigo-700 transition
               flex items-center justify-center gap-3
-              ${btnLoading ? "opacity-70 cursor-not-allowed" : "hover:scale-[1.02]"}
+              ${btnLoading ? "opacity-70 cursor-not-allowed" : ""}
             `}
           >
             <FaSave />

@@ -9,7 +9,7 @@ function UserList() {
   const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
-  const [role, setRole] = useState("user"); // user | admin
+  const [role, setRole] = useState("user");
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
 
@@ -17,29 +17,21 @@ function UserList() {
     getUsers();
   }, [role]);
 
-  /* ================= BACK ================= */
-  function handleBack() {
-    navigate(-1);
-  }
-
-  /* ================= GET USERS / ADMINS ================= */
   async function getUsers() {
     try {
       setLoading(true);
       const res = await instance.get(`/admin/users?role=${role}`);
       setUsers(res.data);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load users");
     } finally {
       setLoading(false);
     }
   }
 
-  /* ================= BLOCK / UNBLOCK ================= */
   async function toggleBlock(userId, isBlocked) {
     try {
       setActionId(userId);
-
       await instance.put(`/admin/user/block/${userId}`, {
         blocked: !isBlocked,
       });
@@ -51,63 +43,55 @@ function UserList() {
       );
 
       toast.success(isBlocked ? "User unblocked" : "User blocked");
-    } catch (error) {
+    } catch {
       toast.error("Action failed");
     } finally {
       setActionId(null);
     }
   }
 
-  /* ================= LOADER ================= */
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <AiOutlineLoading3Quarters className="text-4xl text-teal-600 animate-spin" />
+        <AiOutlineLoading3Quarters className="text-3xl animate-spin text-indigo-500" />
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-
-      {/* 🔙 BACK BUTTON */}
-      <div className="mb-6">
+    <div
+      className="p-4 sm:p-6"
+      style={{
+        background:
+          "linear-gradient(135deg,#f8fafc,#eef2ff,#f1f5f9)",
+      }}
+    >
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <button
-          onClick={handleBack}
-          className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-slate-600 hover:text-slate-900"
         >
-          <span className="p-2 rounded-full border border-slate-300 hover:bg-slate-200 transition">
-            <FaArrowLeft className="text-sm" />
-          </span>
-          <span className="text-sm">Back</span>
+          <FaArrowLeft /> Back
         </button>
-      </div>
 
-      {/* 🔹 HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">
-          {role === "user" ? "User List" : "Admin List"}
-        </h2>
-
-        {/* 🔽 DROPDOWN */}
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          className="border px-3 py-2 rounded-lg"
+          className="border px-3 py-2 rounded-lg w-full sm:w-auto"
         >
           <option value="user">Users</option>
           <option value="admin">Admins</option>
         </select>
       </div>
 
-      {/* 🔹 TABLE */}
-      <div className="overflow-x-auto bg-white rounded-xl shadow">
-        <table className="w-full text-left">
-          <thead className="bg-gray-100 text-gray-600">
+      {/* TABLE WRAPPER */}
+      <div className="bg-white rounded-2xl shadow-sm overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-100 text-slate-600">
             <tr>
-              <th className="p-3">Name</th>
-              <th className="p-3">Email</th>
-              <th className="p-3">Role</th>
+              <th className="p-3 text-left">Name</th>
+              <th className="p-3 text-left">Email</th>
               <th className="p-3">Status</th>
               <th className="p-3">Action</th>
             </tr>
@@ -116,46 +100,36 @@ function UserList() {
           <tbody>
             {users.length === 0 ? (
               <tr>
-                <td colSpan="5" className="p-4 text-center text-gray-500">
-                  No data found
+                <td colSpan="4" className="p-4 text-center text-slate-500">
+                  No users found
                 </td>
               </tr>
             ) : (
               users.map(u => (
                 <tr key={u._id} className="border-t">
                   <td className="p-3">{u.name}</td>
-                  <td className="p-3">{u.email}</td>
-                  <td className="p-3 capitalize">{u.role}</td>
+                  <td className="p-3 break-all">{u.email}</td>
 
-                  <td className="p-3">
+                  <td className="p-3 text-center">
                     {u.blocked ? (
-                      <span className="text-red-600 font-semibold">
-                        Blocked
-                      </span>
+                      <span className="text-red-600 font-medium">Blocked</span>
                     ) : (
-                      <span className="text-green-600 font-semibold">
-                        Active
-                      </span>
+                      <span className="text-green-600 font-medium">Active</span>
                     )}
                   </td>
 
-                  <td className="p-3">
+                  <td className="p-3 text-center">
                     {role === "user" && (
                       <button
                         onClick={() => toggleBlock(u._id, u.blocked)}
-                        className={`px-3 py-1 rounded-lg text-white ${
+                        className={`px-3 py-1 rounded-lg text-white text-xs
+                        ${
                           u.blocked
-                            ? "bg-green-600 hover:bg-green-700"
-                            : "bg-red-600 hover:bg-red-700"
+                            ? "bg-green-600"
+                            : "bg-red-600"
                         }`}
                       >
-                        {actionId === u._id ? (
-                          <AiOutlineLoading3Quarters className="animate-spin inline" />
-                        ) : u.blocked ? (
-                          "Unblock"
-                        ) : (
-                          "Block"
-                        )}
+                        {actionId === u._id ? "..." : u.blocked ? "Unblock" : "Block"}
                       </button>
                     )}
                   </td>
