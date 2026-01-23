@@ -5,7 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ToastContainer } from 'react-toastify';
 
 createRoot(document.getElementById('root')).render(
-  <GoogleOAuthProvider clientId="56249602568-odvk0c8kk3r57afp2fqqtldng4h59tb4.apps.googleusercontent.com">
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_clientId}>
     <App />
     <ToastContainer
       position="top-right"

@@ -47,9 +47,11 @@ function Login() {
     try {
       setLoading(true);
 
-      const response = await instance.post("/user/google-login", {
-        token: res.credential,
-      });
+      const response = await instance.post(
+        "/user/google-login",
+        { token: res.credential },
+        { withCredentials: true }
+      );
 
       const { token, user } = response.data;
 

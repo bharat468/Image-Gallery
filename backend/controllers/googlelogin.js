@@ -38,12 +38,18 @@ export const googleLogin = async (req, res) => {
 
     res.cookie("auth_token", authToken, {
       httpOnly: true,
-      secure: process.env.secure,
-      sameSite: process.env.samesite,
+      secure: process.env.NODE_ENV === "production", // 🔥
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.status(200).json({ message: "Login success", user });
+
+    res.status(200).json({
+      message: "Login success",
+      user,
+      token: authToken
+    });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
