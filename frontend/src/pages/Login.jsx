@@ -22,18 +22,23 @@ function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      const res = await instance.post("/user/login", data);
+      setLoading(true);
 
+      const res = await instance.post("/user/login", data);
       const { token, user } = res.data;
 
-      // 🔐 token store
+      // 🔐 Store token & user
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
       setIsLoggedIn(true);
+
+      toast.success("Login successful 🎉"); // ✅ SUCCESS TOAST
       navigate("/");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Invalid credentials");
+      toast.error(error.response?.data?.message || "Invalid credentials ❌");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -43,19 +48,21 @@ function Login() {
       setLoading(true);
 
       const response = await instance.post("/user/google-login", {
-        token: res.credential, // 👈 ONLY THIS FIELD
+        token: res.credential,
       });
 
       const { token, user } = response.data;
 
-      // 🔐 token store
+      // 🔐 Store token & user
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
       setIsLoggedIn(true);
+
+      toast.success("Google login successful 🎉"); // ✅ SUCCESS TOAST
       navigate("/");
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error("Google login failed ❌");
     } finally {
       setLoading(false);
@@ -102,9 +109,10 @@ function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-lg bg-slate-900 text-white font-semibold"
+            className="w-full py-3 rounded-lg bg-slate-900 text-white font-semibold
+              disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
 
           <Link to="/register" className="block text-center text-sm">
@@ -117,7 +125,7 @@ function Login() {
         <div className="flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
-            onError={() => toast.error("Google Login Failed")}
+            onError={() => toast.error("Google Login Failed ❌")}
           />
         </div>
       </div>

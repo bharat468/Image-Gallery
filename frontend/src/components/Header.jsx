@@ -11,17 +11,17 @@ import {
   FaSignInAlt,
   FaBars,
   FaTimes,
+  FaUserShield,
 } from "react-icons/fa";
 
 function Header() {
   const navigate = useNavigate();
-  const { isLoggedIn, setIsLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuth();
   const [open, setOpen] = useState(false);
 
   async function handleLogout() {
     try {
       await instance.post("/user/logout", {}, { withCredentials: true });
-      setIsLoggedIn(false);
       toast.success("Logged out successfully 👋");
       navigate("/login");
       setOpen(false);
@@ -38,6 +38,7 @@ function Header() {
     <header className="sticky top-0 z-50">
       <div className="relative bg-gradient-to-r from-[#0f0c29] via-[#302b63] to-[#24243e] backdrop-blur-xl border-b border-white/10">
 
+        {/* Glow strip */}
         <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
 
         <div className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between relative">
@@ -82,6 +83,16 @@ function Header() {
               <FaInfoCircle /> About
             </NavLink>
 
+            {/* Admin */}
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `flex items-center gap-2 ${isActive ? activeClass : normalClass}`
+              }
+            >
+              <FaUserShield /> Admin
+            </NavLink>
+
             {!isLoggedIn ? (
               <Link
                 to="/login"
@@ -107,7 +118,7 @@ function Header() {
             )}
           </nav>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Toggle */}
           <button
             onClick={() => setOpen(!open)}
             className="md:hidden text-white text-xl"
@@ -118,8 +129,11 @@ function Header() {
 
         {/* Mobile Menu */}
         {open && (
-          <div className="md:hidden px-6 pb-4 space-y-4 bg-black/80 backdrop-blur-lg">
-
+          <div
+            className="md:hidden px-6 pb-4 space-y-4
+              bg-gradient-to-r from-[#0f0c29] via-[#302b63] to-[#24243e]
+              backdrop-blur-xl border-t border-white/10"
+          >
             <NavLink
               to="/"
               onClick={() => setOpen(false)}
@@ -154,6 +168,19 @@ function Header() {
               }
             >
               <FaInfoCircle /> About
+            </NavLink>
+
+            {/* Admin */}
+            <NavLink
+              to="/admin"
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 ${
+                  isActive ? "text-pink-400" : "text-slate-300"
+                }`
+              }
+            >
+              <FaUserShield /> Admin
             </NavLink>
 
             {!isLoggedIn ? (
