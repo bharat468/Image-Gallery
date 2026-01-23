@@ -31,15 +31,19 @@ export const googleLogin = async (req, res) => {
 
     // LOGIN
     const authToken = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+  {
+    id: user._id,
+    role: "user",   // ✅ ADD THIS
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
+
 
     res.cookie("auth_token", authToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // 🔥
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: false,
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 

@@ -25,11 +25,11 @@ function Login() {
       setLoading(true);
 
       const res = await instance.post("/user/login", data);
-      const { token, user } = res.data;
+      const { token, } = res.data;
 
       // 🔐 Store token & user
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      // localStorage.setItem("user", JSON.stringify(user));
 
       setIsLoggedIn(true);
 

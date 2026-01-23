@@ -1,5 +1,9 @@
 import Image from "../models/imageModel.js";
 import cloudinary from "../middlewares/cloudinary.js";
+import mongoose from "mongoose";
+
+
+
 
 /* ================= UPLOAD IMAGE ================= */
 export async function uploadImage(req, res) {
@@ -57,35 +61,67 @@ export async function getImages(req, res) {
 }
 
 /* ================= LIKE / UNLIKE ================= */
+
+
 export async function likeUnlikeImage(req, res) {
   try {
     const { id } = req.params;
-    const userId = String(req.userId);
+    const userId = req.userId;
+
+    // ensure authenticated
+    if (!userId) {
+      return res.status(401).json({ message: "Login required" });
+    }
+
+    // validate userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user id" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid image id" });
+    }
 
     const image = await Image.findById(id);
     if (!image) {
       return res.status(404).json({ message: "Image not found" });
     }
 
-    const likes = image.likes.map((uid) => uid.toString());
-    const index = likes.indexOf(userId);
+    const userObjectId = new mongoose.Types.ObjectId(userId);
 
-    if (index > -1) likes.splice(index, 1);
-    else likes.push(userId);
+    const alreadyLiked = Array.isArray(image.likes) && image.likes.some(
+      (uid) => uid.toString() === userId
+    );
 
-    image.likes = likes;
-    await image.save();
+    // Use atomic DB update to avoid saving validation issues
+    let updated;
+    if (alreadyLiked) {
+      updated = await Image.findByIdAndUpdate(
+        id,
+        { $pull: { likes: userObjectId } },
+        { new: true }
+      );
+    } else {
+      updated = await Image.findByIdAndUpdate(
+        id,
+        { $addToSet: { likes: userObjectId } },
+        { new: true }
+      );
+    }
+
+    if (!updated) {
+      return res.status(500).json({ message: "Failed to update likes" });
+    }
 
     return res.status(200).json({
-      _id: image._id,
-      title: image.title,
-      imageUrl: image.imageUrl,
-      likes,
+      likes: (updated.likes || []).map((id) => id.toString()),
     });
-  } catch (err) {
+
+  } catch (error) {
+    console.error("LIKE ERROR 👉", error && error.stack ? error.stack : error);
     return res.status(500).json({ message: "Like failed" });
   }
 }
+
 
 /* ================= DELETE IMAGE ================= */
 export async function deleteImage(req, res) {

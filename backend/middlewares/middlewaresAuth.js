@@ -6,17 +6,21 @@ import "dotenv/config"
 export async function checkAuth(req, res, next) {
   try {
     const token = req.cookies.auth_token;
-    if (!token) return res.status(401).json({ message: "Login required" });
+
+    if (!token) {
+      return res.status(401).json({ message: "Login required" });
+    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 🔥 ALWAYS STRING
-    req.userId = String(decoded.id);
+    req.userId = decoded.id.toString();
     next();
   } catch (err) {
+    console.log("AUTH ERROR 👉", err.message);
     return res.status(401).json({ message: "Invalid token" });
   }
 }
+
 
 
 

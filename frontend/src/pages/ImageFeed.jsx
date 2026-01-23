@@ -32,15 +32,17 @@ function ImageFeed() {
       }
 
       const res = await instance.get("/image/feed");
-
+      
+      
       const safeImages = shuffleArray(
         res.data.map((img) => ({
           ...img,
           likes: Array.isArray(img.likes) ? img.likes.map(String) : [],
         }))
       );
-
+      
       setImages(safeImages);
+      console.log(images);
     } catch {
       toast.error("Failed to load images ❌");
     } finally {
@@ -48,30 +50,53 @@ function ImageFeed() {
     }
   }
 
+  // async function toggleLike(imageId) {
+  //   if (!userId) {
+  //     toast.info("Please login to like ❤️");
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await instance.post(
+  //       `/image/like/${imageId}`,
+  //       {},
+  //       { withCredentials: true }
+  //     );
+
+  //     const updatedLikes = (res.data.likes || []).map(String);
+
+  //     setImages((prev) =>
+  //       prev.map((img) =>
+  //         img._id === imageId ? { ...img, likes: updatedLikes } : img
+  //       )
+  //     );
+  //   } catch {
+  //     toast.error("Like / Unlike failed ❌");
+  //   }
+  // }
+
   async function toggleLike(imageId) {
-    if (!userId) {
-      toast.info("Please login to like ❤️");
-      return;
-    }
-
-    try {
-      const res = await instance.post(
-        `/image/like/${imageId}`,
-        {},
-        { withCredentials: true }
-      );
-
-      const updatedLikes = (res.data.likes || []).map(String);
-
-      setImages((prev) =>
-        prev.map((img) =>
-          img._id === imageId ? { ...img, likes: updatedLikes } : img
-        )
-      );
-    } catch {
-      toast.error("Like / Unlike failed ❌");
-    }
+  if (!userId) {
+    toast.info("Please login to like ❤️");
+    return;
   }
+
+  try {
+    const res = await instance.post(`/image/like/${imageId}`);
+
+    setImages((prev) =>
+      prev.map((img) =>
+        img._id === imageId
+          ? { ...img, likes: res.data.likes }
+          : img
+      )
+    );
+  } catch (err) {
+    console.log(err);
+    toast.error("Like / Unlike failed ❌");
+  }
+}
+
 
   /* ================= DOUBLE TAP HANDLER ================= */
   function handleDoubleTap(img) {
