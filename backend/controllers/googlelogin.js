@@ -7,7 +7,6 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 export const googleLogin = async (req, res) => {
   try {
     const { token } = req.body;
-    console.log(req.body)
 
     const ticket = await client.verifyIdToken({
       idToken: token,
@@ -19,42 +18,38 @@ export const googleLogin = async (req, res) => {
     let user = await Auth.findOne({ email });
 
     if (!user) {
-      // REGISTER
       user = await Auth.create({
         name,
         email,
         googleId: sub,
-        // image: picture,
         authProvider: "google",
+        role: "user", // 🔥 IMPORTANT
       });
     }
 
-    // LOGIN
     const authToken = jwt.sign(
-  {
-    id: user._id,
-    role: "user",   // ✅ ADD THIS
-  },
-  process.env.JWT_SECRET,
-  { expiresIn: "7d" }
-);
+      {
+        id: user._id,
+        role: "user", // 🔥 VERY IMPORTANT
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-
+    // 🔥 COOKIE SET KARO
     res.cookie("auth_token", authToken, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-
     res.status(200).json({
-      message: "Login success",
+      token: authToken,
       user,
-      token: authToken
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Google login failed" });
   }
 };
